@@ -49,7 +49,9 @@ public class MainActivity extends FragmentActivity {
         basePagers.add(new NetVideoPager(this));//添加网络视频页面-2
         basePagers.add(new NetAudioPager(this));//添加网络音频页面-3
 
+        //设置点击事件监听
         rg_bottom_tag.setOnCheckedChangeListener(new MyOnCheckedChangeListener());
+        //设置初始选中本地视频
         rg_bottom_tag.check(R.id.rb_video);
 
     }

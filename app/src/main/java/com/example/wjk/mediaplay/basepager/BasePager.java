@@ -15,10 +15,17 @@ public abstract class BasePager {
     /**
      * 上下文
      */
-    public Context content;
-
+    public final Context content;
+    /**
+     * isInitData默认值为false
+     */
     public boolean isInitData;
     public View rootView;
+
+    /**
+     * 构造函数
+     * @param content
+     */
     public BasePager(Context content){
         this.content = content;
         rootView = initView();
@@ -34,7 +41,5 @@ public abstract class BasePager {
     /**
      * 当子页面，需要绑定数据，或者联网请求数据并且绑定的时候，重写该方法
      */
-    public void initData(){
-
-    }
+    public void initData(){}
 }

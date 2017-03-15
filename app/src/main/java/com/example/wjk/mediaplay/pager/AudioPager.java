@@ -2,6 +2,7 @@ package com.example.wjk.mediaplay.pager;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.wjk.mediaplay.basepager.BasePager;
@@ -20,7 +21,10 @@ public class AudioPager extends BasePager {
 
     @Override
     public View initView() {
-        return null;
+        TextView textView = new TextView(content);
+        textView.setText("AudioPager");
+        Toast.makeText(content, "AudioPager", Toast.LENGTH_LONG).show();
+        return textView;
     }
 
     @Override
