@@ -1,18 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_lunch"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ffffff"
+    android:orientation="vertical"
     tools:context="com.example.wjk.mediaplay.activity.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="MainActivity"
-        android:layout_centerInParent="true"
-        android:textSize="18sp"/>
 
-</RelativeLayout>
+    <!--标题栏-->
+
+    <!--帧布局-->
+    <FrameLayout
+        android:id="@+id/fl_main_content"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    </FrameLayout>
+
+    <!--RadioGroup-->
+    <RadioGroup
+        android:id="@+id/rg_bottom_tag"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#11000000"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="3dp"
+        android:layout_gravity="center_horizontal"
+        >
+
+        <RadioButton
+            android:id="@+id/rb_video"
+            android:text="本地视频"
+            android:drawableTop="@drawable/rb_video_drawable_selector"
+            style="@style/bottom_tag_style"/>
+
+        <RadioButton
+            android:id="@+id/rb_audio"
+            android:text="本地音频"
+            android:drawableTop="@drawable/rb_audio_drawable_selector"
+            style="@style/bottom_tag_style" />
+
+        <RadioButton
+            android:id="@+id/rb_net_video"
+            android:text="网络视频"
+            android:drawableTop="@drawable/rb_net_video_drawable_selector"
+            style="@style/bottom_tag_style"/>
+
+        <RadioButton
+            android:id="@+id/rb_net_audio"
+            android:text="网络音乐"
+            android:drawableTop="@drawable/rb_netaudio_drawable_selector"
+            style="@style/bottom_tag_style"/>
+
+    </RadioGroup>
+
+</LinearLayout>

@@ -42,12 +42,12 @@ public class LunchActivity extends AppCompatActivity {
 
     }
 
-//    @Override
-//    public boolean onTouchEvent(MotionEvent event) {
-//        Log.e(TAG, "onTouchEvent-Action:"+event.getAction());
-//        startMainActivity();
-//        return super.onTouchEvent(event);
-//    }
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Log.e(TAG, "onTouchEvent-Action:"+event.getAction());
+        startMainActivity();
+        return super.onTouchEvent(event);
+    }
 
     @Override
     protected void onDestroy() {
