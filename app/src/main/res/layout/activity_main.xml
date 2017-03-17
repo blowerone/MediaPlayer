@@ -9,6 +9,7 @@
 
 
     <!--标题栏-->
+    <include layout="@layout/titlebar"/>
 
     <!--帧布局-->
     <FrameLayout
