@@ -104,7 +104,8 @@ public class MainActivity extends FragmentActivity {
 
     private BasePager getBasePager() {
         BasePager basePager = basePagers.get(position);
-        if (basePager != null && basePager.isInitData){
+        //判断得到的页面不为空且数据未被初始化，否则每次切回本页面都会初始化
+        if (basePager != null && !basePager.isInitData){
             basePager.initData();//联网请求或者绑定数据
             basePager.isInitData = true;
         }
