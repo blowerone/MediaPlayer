@@ -2,18 +2,21 @@ package com.example.wjk.mediaplay.pager;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.wjk.mediaplay.R;
 import com.example.wjk.mediaplay.VideoPagerAdapter.VideoPagerAdapter;
+import com.example.wjk.mediaplay.activity.SystemVideoPlayer;
 import com.example.wjk.mediaplay.basepager.BasePager;
 import com.example.wjk.mediaplay.domain.MediaItem;
 import com.example.wjk.mediaplay.utils.LogUtil;
@@ -74,6 +77,8 @@ public class VideoPager extends BasePager {
         listview = (ListView) view.findViewById(R.id.listview);
         tv_nomedia = (TextView) view.findViewById(R.id.tv_nomedia);
         pb_loading = (ProgressBar) view.findViewById(R.id.pb_loading);
+
+        listview.setOnItemClickListener(new MyOnItemClickListener());
         return view;
 
     }
@@ -130,5 +135,22 @@ public class VideoPager extends BasePager {
                 handler.sendEmptyMessage(10);
             }
         }.start();
+    }
+
+    private class MyOnItemClickListener implements AdapterView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            //获取对应Item的数据
+            MediaItem mediaItem = mediaItems.get(position);
+
+            //调起系统所有的播放器-隐士意图
+//            Intent intent = new Intent();
+//            intent.setDataAndType(Uri.parse(mediaItem.getData()),"video/*");
+//            content.startActivity(intent);
+            //调用自己写的播放器-显示意图
+            Intent intent = new Intent(content, SystemVideoPlayer.class);
+            intent.setDataAndType(Uri.parse(mediaItem.getData()),"video/*");
+            content.startActivity(intent);
+        }
     }
 }
