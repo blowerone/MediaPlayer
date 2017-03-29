@@ -1,6 +1,10 @@
 package com.example.wjk.mediaplay.activity;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,13 +14,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.MediaController;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.VideoView;
 
 import com.example.wjk.mediaplay.R;
 import com.example.wjk.mediaplay.utils.Utils;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by wjk on 2017/3/19.
@@ -44,7 +49,11 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
     private Button btnVideoNext;
     private Button btnVideoSwitchScreen;
     private Utils utils;
+    /**
+     * 视频进度的更新
+     */
     private final int PROGRESS = 1;
+    private MyReceiver receiver;
 
     /**
      * Find the Views in the layout<br />
@@ -131,9 +140,11 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
                     //2.SeekBar.setProgress(当前进度);
                     seekbarVideo.setProgress(currentPosition);
 
-
                     //更新文本播放进度
                     tvCurrentTime.setText(utils.stringForTime(currentPosition));
+
+                    //更新系统时间
+                    tvSystemTime.setText(getSystemTime());
 
                     //3.每秒更新一次
                     handler.removeMessages(PROGRESS);
@@ -142,11 +153,17 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
             }
         }
     };
+
+    private String getSystemTime() {
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+        return format.format(new Date());
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         findViews();
-        utils = new Utils();
+        initData();
         uri = getIntent().getData();
         if(uri != null){
             videoview.setVideoURI(uri);
@@ -156,6 +173,44 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
 
         setListener();
 
+    }
+
+    private void initData() {
+        utils = new Utils();
+        //注册广播
+        receiver = new MyReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_BATTERY_CHANGED);
+        registerReceiver(receiver,filter);
+    }
+
+    class MyReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int level = intent.getIntExtra("level",0);
+            setBattery(level);
+        }
+    }
+
+    private void setBattery(int level) {
+        if(level<0){
+            ivBattery.setImageResource(R.drawable.ic_battery_0);
+        }else if(level<10){
+            ivBattery.setImageResource(R.drawable.ic_battery_10);
+        }else if(level<20){
+            ivBattery.setImageResource(R.drawable.ic_battery_20);
+        }else if(level<40){
+            ivBattery.setImageResource(R.drawable.ic_battery_40);
+        }else if(level<60){
+            ivBattery.setImageResource(R.drawable.ic_battery_60);
+        }else if(level<80){
+            ivBattery.setImageResource(R.drawable.ic_battery_80);
+        }else if(level<100){
+            ivBattery.setImageResource(R.drawable.ic_battery_100);
+        }else{
+            ivBattery.setImageResource(R.drawable.ic_battery_100);
+        }
     }
 
     private void setListener() {
