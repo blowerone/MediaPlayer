@@ -16,11 +16,14 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.example.wjk.mediaplay.R;
+import com.example.wjk.mediaplay.domain.MediaItem;
 import com.example.wjk.mediaplay.utils.Utils;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -54,6 +57,14 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
      */
     private final int PROGRESS = 1;
     private MyReceiver receiver;
+    /**
+     * 传入的视频播放列表
+     */
+    private ArrayList<MediaItem> mediaItems;
+    /**
+     * 传入的点击播放位置
+     */
+    private int position;
 
     /**
      * Find the Views in the layout<br />
@@ -104,8 +115,10 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
             // Handle clicks for btnSwitchPlayer
         } else if ( v == btnExit ) {
             // Handle clicks for btnExit
+            finish();
         } else if ( v == btnVideoPre ) {
             // Handle clicks for btnVideoPre
+            playPreVideo();
         } else if ( v == btnVideoStartPause ) {
             // Handle clicks for btnVideoStartPause
             // Handle clicks for btnVideoStartPause
@@ -122,10 +135,95 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
             }
         } else if ( v == btnVideoNext ) {
             // Handle clicks for btnVideoNext
+            playNextVideo();
         } else if ( v == btnVideoSwitchScreen ) {
             // Handle clicks for btnVideoSwitchScreen
         }
     }
+
+    private void playPreVideo() {
+        if(mediaItems != null && mediaItems.size() > 0){
+            position-- ;
+            if(position >= 0){
+                MediaItem mediaitem = mediaItems.get(position);
+                tvName.setText(mediaitem.getName());
+                videoview.setVideoPath(mediaitem.getData());
+                setButtonState();
+            }
+        }else if (uri != null){
+            setButtonState();
+        }
+    }
+
+    private void playNextVideo() {
+        if(mediaItems != null && mediaItems.size() > 0){
+            position++ ;
+            if(position < mediaItems.size()){
+                MediaItem mediaitem = mediaItems.get(position);
+                tvName.setText(mediaitem.getName());
+                videoview.setVideoPath(mediaitem.getData());
+                setButtonState();
+            }
+        }else if (uri != null){
+            setButtonState();
+        }
+
+    }
+
+    private void setButtonState() {
+        if(mediaItems != null && mediaItems.size() >0){
+            //一个视频的情况
+            if(mediaItems.size() ==1 ){
+                setEnable(false);
+            //两个视频的情况
+            }else if(mediaItems.size() == 2){
+                if(position==0){
+                    btnVideoPre.setBackgroundResource(R.drawable.btn_pre_gray);
+                    btnVideoPre.setEnabled(false);
+
+                    btnVideoNext.setBackgroundResource(R.drawable.btn_video_next_selector);
+                    btnVideoNext.setEnabled(true);
+
+                }else if(position==mediaItems.size()-1){
+                    btnVideoNext.setBackgroundResource(R.drawable.btn_next_gray);
+                    btnVideoNext.setEnabled(false);
+
+                    btnVideoPre.setBackgroundResource(R.drawable.btn_video_pre_selector);
+                    btnVideoPre.setEnabled(true);
+
+                }
+            //三个视频的情况
+            }else {
+                if (position == 0) {
+                    btnVideoPre.setBackgroundResource(R.drawable.btn_pre_gray);
+                    btnVideoPre.setEnabled(false);
+                } else if (position == mediaItems.size() - 1) {
+                    btnVideoNext.setBackgroundResource(R.drawable.btn_next_gray);
+                    btnVideoNext.setEnabled(false);
+                } else {
+                    setEnable(true);
+                }
+            }
+        }else if (uri != null){
+            setEnable(false);
+        }
+    }
+
+    private void setEnable(boolean isEnable) {
+        if(isEnable){
+            btnVideoPre.setBackgroundResource(R.drawable.btn_video_pre_selector);
+            btnVideoPre.setEnabled(true);
+            btnVideoNext.setBackgroundResource(R.drawable.btn_video_next_selector);
+            btnVideoNext.setEnabled(true);
+        }else{
+            //两个按钮设置灰色
+            btnVideoPre.setBackgroundResource(R.drawable.btn_pre_gray);
+            btnVideoPre.setEnabled(false);
+            btnVideoNext.setBackgroundResource(R.drawable.btn_next_gray);
+            btnVideoNext.setEnabled(false);
+        }
+    }
+
 
     private Handler handler = new Handler(){
         @Override
@@ -164,15 +262,32 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
         super.onCreate(savedInstanceState);
         findViews();
         initData();
-        uri = getIntent().getData();
-        if(uri != null){
-            videoview.setVideoURI(uri);
-        }
+        getData();
+        setData();
         //设置控制面板
 //        videoview.setMediaController(new MediaController(this));
 
         setListener();
 
+    }
+
+    private void setData() {
+        if(mediaItems != null && mediaItems.size()>0){
+            MediaItem mediaitem = mediaItems.get(position);
+            tvName.setText(mediaitem.getName());//设置视频的名称
+            videoview.setVideoPath(mediaitem.getData());
+        }else if(uri != null) {
+            tvName.setText(uri.toString());
+            videoview.setVideoURI(uri);
+        }else{
+            Toast.makeText(SystemVideoPlayer.this, "没有传递数据",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void getData() {
+        uri = getIntent().getData();
+        mediaItems = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videoList");
+        position = getIntent().getIntExtra("position",0);
     }
 
     private void initData() {
@@ -252,6 +367,8 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
         @Override
         public void onCompletion(MediaPlayer mp) {
             btnVideoStartPause.setBackgroundResource(R.drawable.btn_video_start_selector);
+            playNextVideo();
+            btnVideoStartPause.setBackgroundResource(R.drawable.btn_video_pause_selector);
         }
     }
 
@@ -287,5 +404,15 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
         public void onStopTrackingTouch(SeekBar seekBar) {
 
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        //释放资源的时候，先释放子类的资源，再释放父类的资源
+        if(receiver != null){
+            unregisterReceiver(receiver);
+            receiver = null;
+        }
+        super.onDestroy();
     }
 }

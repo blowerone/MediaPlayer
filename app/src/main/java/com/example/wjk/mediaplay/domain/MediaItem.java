@@ -1,11 +1,13 @@
 package com.example.wjk.mediaplay.domain;
 
+import java.io.Serializable;
+
 /**
  * Created by wjk on 2017/3/18.
  * JavaBean
  */
 
-public class MediaItem {
+public class MediaItem implements Serializable{
 
     private String name;
 
