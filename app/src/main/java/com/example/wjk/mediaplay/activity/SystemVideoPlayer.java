@@ -11,8 +11,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.style.UpdateAppearance;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -26,6 +28,7 @@ import android.widget.Toast;
 
 import com.example.wjk.mediaplay.R;
 import com.example.wjk.mediaplay.domain.MediaItem;
+import com.example.wjk.mediaplay.utils.LogUtil;
 import com.example.wjk.mediaplay.utils.Utils;
 import com.example.wjk.mediaplay.view.VideoView;
 
@@ -626,10 +629,40 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
         super.onDestroy();
     }
 
+    private float startY;
+    /**
+     * 屏幕的高
+     */
+    private float touchRang;
+    /**
+     * 按下时的音量
+     */
+    private int mVol;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         //将事件传递给手势识别器
         detector.onTouchEvent(event);
+        switch (event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                startY = event.getY();
+                mVol = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                touchRang = Math.min(screenHeight,screenWidth);
+                handler.removeMessages(HIDE_MEDIACONTROLLER);
+                break;
+            case MotionEvent.ACTION_HOVER_MOVE:
+                float endY = event.getY();
+                float distanceY = startY - endY;
+                float delta = (distanceY/touchRang)*maxVoice;
+                int voice = (int) Math.min(Math.max(mVol+delta,0),maxVoice);
+                if(delta != 0){
+                    isMute = false;
+                    updateVoice(voice, isMute);
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 4000);
+                break;
+        }
         return super.onTouchEvent(event);
     }
 
@@ -649,4 +682,25 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
         ismedia_controller = false;
     }
 
+    /**
+     * 监听物理键，实现声音的变化
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        showMediaController();
+        if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN){
+            currentVoice--;
+            updateVoice(currentVoice,false);
+            handler.removeMessages(HIDE_MEDIACONTROLLER);
+            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
+            return true;
+        }else if(keyCode == KeyEvent.KEYCODE_VOLUME_UP){
+            currentVoice++;
+            updateVoice(currentVoice,false);
+            handler.removeMessages(HIDE_MEDIACONTROLLER);
+            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 }
