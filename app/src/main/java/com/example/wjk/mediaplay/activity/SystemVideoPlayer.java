@@ -11,7 +11,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.style.UpdateAppearance;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
@@ -118,6 +117,11 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
      */
     private boolean isMute = false;
     /**
+     * 是否是网络视频
+     */
+    private boolean isNetUri;
+
+    /**
      * Find the Views in the layout<br />
      * <br />
      * Auto-created on 2017-03-26 21:12:06 by Android Layout Finder
@@ -212,6 +216,7 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
             if(position >= 0){
                 MediaItem mediaitem = mediaItems.get(position);
                 tvName.setText(mediaitem.getName());
+                isNetUri = utils.isNetUri(mediaitem.getName());
                 videoview.setVideoPath(mediaitem.getData());
                 setButtonState();
             }
@@ -226,6 +231,7 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
             if(position < mediaItems.size()){
                 MediaItem mediaitem = mediaItems.get(position);
                 tvName.setText(mediaitem.getName());
+                isNetUri = utils.isNetUri(mediaitem.getName());
                 videoview.setVideoPath(mediaitem.getData());
                 setButtonState();
             }
@@ -312,6 +318,15 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
                     //更新系统时间
                     tvSystemTime.setText(getSystemTime());
 
+                    //只有网络视频才有缓冲
+                    if(isNetUri){
+                        int buffer = videoview.getBufferPercentage();
+                        int totalbuffer = buffer*seekbarVideo.getMax();
+                        int secondaryProgress = totalbuffer/100;
+                        seekbarVideo.setSecondaryProgress(secondaryProgress);
+                    }else{
+                        seekbarVideo.setSecondaryProgress(0);
+                    }
                     //3.每秒更新一次
                     handler.removeMessages(PROGRESS);
                     handler.sendEmptyMessageDelayed(PROGRESS, 1000);
@@ -344,9 +359,11 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
         if(mediaItems != null && mediaItems.size()>0){
             MediaItem mediaitem = mediaItems.get(position);
             tvName.setText(mediaitem.getName());//设置视频的名称
+            isNetUri = utils.isNetUri(mediaitem.getName());
             videoview.setVideoPath(mediaitem.getData());
         }else if(uri != null) {
             tvName.setText(uri.toString());
+            isNetUri = utils.isNetUri(uri.toString());
             videoview.setVideoURI(uri);
         }else{
             Toast.makeText(SystemVideoPlayer.this, "没有传递数据",Toast.LENGTH_SHORT).show();
